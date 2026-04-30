@@ -1,8 +1,10 @@
 # the following two options are used to control all C and C++ compilations
 CFLAGS   ?= -march=native -O3
 CXXFLAGS ?= -march=native -O3
+LDFLAGS  ?=
 export CFLAGS
 export CXXFLAGS
+export LDFLAGS
 
 # these options are only used for the programs directly inside "./c/"
 IIOLIBS     = -lz -ltiff -lpng -ljpeg -lm
@@ -109,7 +111,7 @@ c/%.o: c/%.cpp
 
 # generic rule to build most imscript binaries
 bin/% : c/%.o c/iio.o
-	$(CC) $^ -o $@ $(IIOLIBS)
+	$(CC) $(LDFLAGS) $^ -o $@ $(IIOLIBS)
 
 
 #
@@ -119,7 +121,7 @@ bin/% : c/%.o c/iio.o
 libraries: lib/disp_to_h.so
 
 lib/disp_to_h.so: c/disp_to_h.o c/iio.o c/rpc.o
-	$(CC) -shared $^ $(IIOLIBS) -o $@
+	$(CC) $(LDFLAGS) -shared $^ $(IIOLIBS) -o $@
 
 
 

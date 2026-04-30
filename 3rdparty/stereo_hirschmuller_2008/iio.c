@@ -440,7 +440,9 @@ int iio_type_id(size_t sample_size, bool ieeefp_sample, bool signed_sample)
 		switch(sample_size) {
 		case sizeof(float):       return IIO_TYPE_FLOAT;
 		case sizeof(double):      return IIO_TYPE_DOUBLE;
+#if __SIZEOF_LONG_DOUBLE__ != __SIZEOF_DOUBLE__
 		case sizeof(long double): return IIO_TYPE_LONGDOUBLE;
+#endif
 		case sizeof(float)/2:     return IIO_TYPE_HALF;
 		default: fail("bad float size %zu", sample_size);
 		}
