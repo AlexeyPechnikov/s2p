@@ -10,6 +10,14 @@ from s2p import common
 from s2p.config import cfg
 
 
+def _init_worker(parent_cfg):
+    # Spawn-safe: copy the parent's cfg into the child's module-level cfg dict
+    # so workers see the same images/roi/tile params as the parent.
+    from s2p.config import cfg as child_cfg
+    child_cfg.clear()
+    child_cfg.update(parent_cfg)
+
+
 def show_progress(a):
     """
     Print the number of tiles that have been processed.
@@ -77,7 +85,9 @@ def launch_calls(fun, list_of_args, nb_workers, *extra_args, tilewise=True,
     outputs = []
     show_progress.counter = 0
     show_progress.total = len(list_of_args)
-    pool = multiprocessing.Pool(nb_workers)
+    pool = multiprocessing.Pool(nb_workers,
+                                initializer=_init_worker,
+                                initargs=(dict(cfg),))
     for x in list_of_args:
         args = tuple()
         if type(x) == tuple:
