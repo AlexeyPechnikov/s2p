@@ -1,8 +1,28 @@
-CFLAGS   ?= -O3 -DNDEBUG -march=native 
+CFLAGS   ?= -O3 -DNDEBUG -march=native
 CXXFLAGS := $(CFLAGS)
 
 CPPFLAGS := -Iiio
 LDLIBS   := -lfftw3 -lpng -ltiff -ljpeg -lm
+
+# macOS / Homebrew: Apple clang ships without OpenMP, so prefer Homebrew gcc
+# when available (gives a real -fopenmp build) and pull in Homebrew's include
+# and lib roots so libpng/libtiff/libjpeg/fftw3 headers are found. Activated
+# only when the user hasn't pinned CC/CXX explicitly.
+UNAME_S := $(shell uname -s)
+ifeq ($(UNAME_S),Darwin)
+  ifeq ($(origin CC),default)
+    HB_GCC := $(shell ls /opt/homebrew/bin/gcc-* 2>/dev/null | grep -E 'gcc-[0-9]+$$' | sort -V | tail -1)
+    HB_GXX := $(shell ls /opt/homebrew/bin/g++-* 2>/dev/null | grep -E 'g\+\+-[0-9]+$$' | sort -V | tail -1)
+    ifneq ($(HB_GCC),)
+      CC  := $(HB_GCC)
+      CXX := $(HB_GXX)
+    endif
+  endif
+  ifneq ($(wildcard /opt/homebrew/include),)
+    CPPFLAGS := $(CPPFLAGS) -I/opt/homebrew/include
+    LDFLAGS  := $(LDFLAGS) -L/opt/homebrew/lib
+  endif
+endif
 
 
 BIN       = mgm_multi  mgm
